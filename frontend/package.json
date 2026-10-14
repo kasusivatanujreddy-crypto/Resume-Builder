@@ -1,0 +1,16 @@
+{
+  "name": "craftcv-frontend",
+  "version": "1.0.0",
+  "description": "CraftCV Studio — Interactive Frontend UI",
+  "scripts": {
+    "dev": "node ../backend/server.js",
+    "start": "node ../backend/server.js"
+  },
+  "keywords": [
+    "resume-builder",
+    "frontend",
+    "ats-resume"
+  ],
+  "author": "",
+  "license": "ISC"
+}

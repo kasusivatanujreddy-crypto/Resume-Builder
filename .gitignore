@@ -1,0 +1,97 @@
+# ==============================================================================
+# CraftCV Studio — Comprehensive .gitignore
+# Prevents sensitive keys, system files, logs, and build artifacts from Git
+# ==============================================================================
+
+# 1. 🔑 Secrets & Environment Variables (CRITICAL - NEVER COMMIT)
+.env
+.env.*
+!.env.example
+!.env.template
+*.env
+backend/.env
+frontend/.env
+*.local
+
+# Certificates, Keys & Private Credentials
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+id_rsa*
+
+# 2. 📦 Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 3. 📝 Runtime Logs & System Dumps
+logs/
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# 4. 💻 Operating System Metadata
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# 5. 🛠️ IDE & Code Editor Configurations
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# 6. 📁 Build Artifacts & Caches
+dist/
+build/
+out/
+.cache/
+.parcel-cache/
+.temp/
+temp/
+tmp/
+*.tmp
+*.bak
+
+# 7. 🧪 Testing & Coverage
+coverage/
+.nyc_output/
+
+# 8. 📄 Local User Export Backups (Protect Personal PII)
+# Avoid accidentally committing personal exported resumes or sensitive PDFs
+*.pdf
+resume-backup*.json
+my-resume*.json
+export-*.json

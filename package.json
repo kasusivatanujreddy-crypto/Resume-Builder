@@ -1,0 +1,19 @@
+{
+  "name": "craftcv-studio",
+  "version": "1.0.0",
+  "description": "CraftCV Studio — Next-Gen Interactive Resume Builder with Live Gemini AI & ATS Engine",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js",
+    "backend": "node backend/server.js",
+    "db:push": "npx supabase db push"
+  },
+  "keywords": [
+    "resume-builder",
+    "ats-optimizer",
+    "gemini-ai",
+    "cv-generator"
+  ],
+  "author": "",
+  "license": "ISC"
+}

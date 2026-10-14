@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CraftCV — Professional Interactive Resume Builder</title>
+  <meta name="description" content="State-of-the-art interactive resume builder with live A4 preview, ATS scoring, modern designer templates, and instant PDF export.">
+  
+  <!-- Premium Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Slab:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/templates.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="app-header">
+    <div class="brand-wrapper">
+      <div class="brand-logo-icon">✦</div>
+      <div class="brand-info">
+        <h1 class="brand-title">CraftCV Studio</h1>
+        <span class="brand-tagline">AI-Ready Executive Resume Engine</span>
+      </div>
+    </div>
+
+    <!-- View Toggles & ATS Score -->
+    <div class="header-middle">
+      <div class="view-mode-tabs">
+        <button type="button" class="view-btn active" id="btn-view-split" title="Side-by-side view">
+          <span>◫</span> Split
+        </button>
+        <button type="button" class="view-btn" id="btn-view-editor" title="Full editor">
+          <span>✎</span> Editor
+        </button>
+        <button type="button" class="view-btn" id="btn-view-preview" title="Full preview">
+          <span>👁</span> Preview
+        </button>
+      </div>
+
+      <div class="ats-score-pill" id="btn-toggle-ats" title="Click to view ATS Score breakdown">
+        <span class="ats-score-ring"></span>
+        <span id="header-ats-score">ATS Score: 92/100</span>
+      </div>
+    </div>
+
+    <!-- Actions & Exports -->
+    <div class="header-actions">
+      <!-- Sample Profiles Dropdown -->
+      <div class="dropdown-wrap" id="sample-dropdown-wrap">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-samples-toggle">
+          <span>📂</span> Load Sample ▾
+        </button>
+        <div class="dropdown-menu">
+          <button type="button" class="dropdown-item" data-sample="software_engineer">
+            <span>💻</span> Senior Software Architect
+          </button>
+          <button type="button" class="dropdown-item" data-sample="product_manager">
+            <span>📊</span> Principal Product Manager
+          </button>
+          <button type="button" class="dropdown-item" data-sample="creative_designer">
+            <span>🎨</span> Lead UI/UX Designer
+          </button>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-secondary btn-sm" id="btn-export-json" title="Download Resume Data as JSON">
+        <span>💾</span> Save JSON
+      </button>
+
+      <label class="btn btn-secondary btn-sm" style="cursor: pointer;" title="Import Resume Data from JSON">
+        <span>📥</span> Load JSON
+        <input type="file" id="file-import-json" accept=".json" style="display: none;">
+      </label>
+
+      <button type="button" class="btn btn-ghost btn-sm" id="btn-clear-all" title="Clear all fields">
+        <span>🗑</span> Reset
+      </button>
+
+      <button type="button" class="btn btn-primary" id="btn-print-pdf">
+        <span>🖨️</span> Download PDF
+      </button>
+    </div>
+  </header>
+
+  <!-- Workspace Container -->
+  <main class="app-container" id="app-container">
+    
+    <!-- LEFT PANE: Editor -->
+    <section class="editor-pane" id="editor-pane">
+      
+      <!-- Editor Nav Tabs -->
+      <nav class="editor-nav-bar" id="editor-tabs">
+        <button type="button" class="editor-nav-tab active" data-tab="tab-personal">👤 Contact</button>
+        <button type="button" class="editor-nav-tab" data-tab="tab-experience">💼 Experience</button>
+        <button type="button" class="editor-nav-tab" data-tab="tab-education">🎓 Education</button>
+        <button type="button" class="editor-nav-tab" data-tab="tab-skills">⚡ Skills</button>
+        <button type="button" class="editor-nav-tab" data-tab="tab-projects">🚀 Projects</button>
+        <button type="button" class="editor-nav-tab" data-tab="tab-certs">📜 Certifications</button>
+        <button type="button" class="editor-nav-tab" data-tab="tab-languages">🌐 Languages</button>
+        <button type="button" class="editor-nav-tab" data-tab="tab-design">🎨 Design</button>
+      </nav>
+
+      <!-- Scrollable Form Area -->
+      <div class="editor-scroll-area">
+        
+        <!-- 1. PERSONAL / CONTACT -->
+        <div class="form-section active" id="tab-personal">
+          <div class="section-head">
+            <h2 class="section-head-title">Personal & Contact Details</h2>
+            <p class="section-head-subtitle">The primary information recruiters and ATS algorithms scan first.</p>
+          </div>
+
+          <div class="avatar-upload-box">
+            <div class="avatar-preview-circle">
+              <img id="avatar-preview-img" src="assets/avatar.jpg" alt="Profile preview">
+            </div>
+            <div class="avatar-controls">
+              <label class="checkbox-label">
+                <input type="checkbox" id="field-show-avatar" checked>
+                <span>Show profile photo on resume</span>
+              </label>
+              <div style="display: flex; gap: 8px;">
+                <label class="btn btn-secondary btn-sm" style="cursor: pointer;">
+                  <span>Upload Photo</span>
+                  <input type="file" id="field-avatar-file" accept="image/*" style="display: none;">
+                </label>
+                <button type="button" class="btn btn-ghost btn-sm" id="btn-remove-avatar">Remove</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="field-full-name">Full Name</label>
+              <input type="text" id="field-full-name" class="form-input" placeholder="e.g. Sophia Chen">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="field-job-title">Professional Title</label>
+              <input type="text" id="field-job-title" class="form-input" placeholder="e.g. Senior Full-Stack Engineer">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="field-email">Email Address</label>
+              <input type="email" id="field-email" class="form-input" placeholder="e.g. sophia.chen@example.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="field-phone">Phone Number</label>
+              <input type="tel" id="field-phone" class="form-input" placeholder="e.g. +1 (555) 234-5678">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="field-location">Location</label>
+              <input type="text" id="field-location" class="form-input" placeholder="e.g. San Francisco, CA">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="field-website">Portfolio / Website</label>
+              <input type="text" id="field-website" class="form-input" placeholder="e.g. https://sophiachen.dev">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="field-linkedin">LinkedIn URL / Username</label>
+              <input type="text" id="field-linkedin" class="form-input" placeholder="e.g. linkedin.com/in/sophiachen">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="field-github">GitHub / Profile URL</label>
+              <input type="text" id="field-github" class="form-input" placeholder="e.g. github.com/sophiachen">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="field-summary">
+              <span>Professional Summary</span>
+              <button type="button" class="badge-tag-btn" id="btn-suggest-summary">✨ Enhance Summary</button>
+            </label>
+            <textarea id="field-summary" class="form-textarea" rows="4" placeholder="Brief 3-4 sentence elevator pitch highlighting key skills, domain expertise, and quantifiable impact..."></textarea>
+          </div>
+        </div>
+
+        <!-- 2. EXPERIENCE -->
+        <div class="form-section" id="tab-experience">
+          <div class="section-head" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2 class="section-head-title">Work Experience</h2>
+              <p class="section-head-subtitle">Highlight achievements with quantifiable data & action verbs.</p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-experience">
+              <span>+ Add Position</span>
+            </button>
+          </div>
+
+          <div class="card-stack" id="experience-cards-container">
+            <!-- Dynamic experience cards populated by JS -->
+          </div>
+        </div>
+
+        <!-- 3. EDUCATION -->
+        <div class="form-section" id="tab-education">
+          <div class="section-head" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2 class="section-head-title">Education & Degrees</h2>
+              <p class="section-head-subtitle">List degrees, universities, honors, and graduation years.</p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-education">
+              <span>+ Add Degree</span>
+            </button>
+          </div>
+
+          <div class="card-stack" id="education-cards-container">
+            <!-- Dynamic education cards populated by JS -->
+          </div>
+        </div>
+
+        <!-- 4. SKILLS -->
+        <div class="form-section" id="tab-skills">
+          <div class="section-head" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2 class="section-head-title">Skills & Competencies</h2>
+              <p class="section-head-subtitle">Organized by category for seamless ATS keyword matching.</p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-skill-category">
+              <span>+ Add Category</span>
+            </button>
+          </div>
+
+          <div class="card-stack" id="skills-categories-container">
+            <!-- Dynamic skill categories populated by JS -->
+          </div>
+        </div>
+
+        <!-- 5. PROJECTS -->
+        <div class="form-section" id="tab-projects">
+          <div class="section-head" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2 class="section-head-title">Projects & Portfolio</h2>
+              <p class="section-head-subtitle">Showcase open-source libraries, products, or key works.</p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-project">
+              <span>+ Add Project</span>
+            </button>
+          </div>
+
+          <div class="card-stack" id="projects-cards-container">
+            <!-- Dynamic project cards populated by JS -->
+          </div>
+        </div>
+
+        <!-- 6. CERTIFICATIONS -->
+        <div class="form-section" id="tab-certs">
+          <div class="section-head" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2 class="section-head-title">Certifications & Licenses</h2>
+              <p class="section-head-subtitle">AWS, Kubernetes, PMP, Scrums, or professional licenses.</p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-cert">
+              <span>+ Add Certificate</span>
+            </button>
+          </div>
+
+          <div class="card-stack" id="certs-cards-container">
+            <!-- Dynamic certification cards populated by JS -->
+          </div>
+        </div>
+
+        <!-- 7. LANGUAGES -->
+        <div class="form-section" id="tab-languages">
+          <div class="section-head" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2 class="section-head-title">Languages</h2>
+              <p class="section-head-subtitle">Spoken languages and proficiency levels.</p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-language">
+              <span>+ Add Language</span>
+            </button>
+          </div>
+
+          <div class="card-stack" id="languages-cards-container">
+            <!-- Dynamic languages cards populated by JS -->
+          </div>
+        </div>
+
+        <!-- 8. DESIGN & STYLING -->
+        <div class="form-section" id="tab-design">
+          <div class="section-head">
+            <h2 class="section-head-title">Templates & Typography</h2>
+            <p class="section-head-subtitle">Tailor visual aesthetics, color palettes, and fonts.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Resume Template</label>
+            <div class="theme-grid" id="template-selector-grid">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Primary Accent Color</label>
+            <div class="palette-swatches" id="color-palette-swatches">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="setting-font-family">Typography Font</label>
+              <select id="setting-font-family" class="form-select">
+                <option value="Inter">Inter (Modern & Clean)</option>
+                <option value="Plus Jakarta Sans">Plus Jakarta Sans (Crisp Tech)</option>
+                <option value="Outfit">Outfit (Clean Geometric)</option>
+                <option value="Space Grotesk">Space Grotesk (Tech Minimal)</option>
+                <option value="Merriweather">Merriweather (Executive Serif)</option>
+                <option value="Roboto Slab">Roboto Slab (Harvard Classic)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="setting-font-size">Font Size Density</label>
+              <select id="setting-font-size" class="form-select">
+                <option value="compact">Compact (Fit more content)</option>
+                <option value="normal" selected>Normal (Balanced)</option>
+                <option value="relaxed">Relaxed (Spacious)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- RIGHT PANE: Live Preview -->
+    <section class="preview-pane" id="preview-pane">
+      
+      <!-- Top Zoom & Status Toolbar -->
+      <div class="preview-toolbar">
+        <div class="preview-status">
+          <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981;"></span>
+          <span>Live Auto-Sync Active</span>
+        </div>
+
+        <div class="zoom-controls">
+          <button type="button" class="zoom-btn" id="btn-zoom-out" title="Zoom out">−</button>
+          <span class="zoom-val" id="zoom-indicator">85%</span>
+          <button type="button" class="zoom-btn" id="btn-zoom-in" title="Zoom in">+</button>
+          <button type="button" class="zoom-btn" id="btn-zoom-fit" title="Fit to window" style="font-size: 11px; width: auto; padding: 0 6px;">Fit</button>
+          <button type="button" class="zoom-btn" id="btn-zoom-100" title="100% Scale" style="font-size: 11px; width: auto; padding: 0 6px;">100%</button>
+        </div>
+      </div>
+
+      <!-- Preview Viewport -->
+      <div class="preview-viewport" id="preview-viewport">
+        <div class="preview-scale-wrapper" id="preview-scale-wrapper">
+          <!-- Live Resume Sheet Injected Here -->
+          <div id="resume-render-mount"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ATS DRAWER / MODAL -->
+  <aside class="ats-drawer" id="ats-drawer">
+    <div class="ats-header">
+      <div class="ats-title">ATS Optimizer & Quality Analysis</div>
+      <button type="button" class="btn btn-ghost btn-sm" id="btn-close-ats" style="font-size: 18px;">✕</button>
+    </div>
+
+    <div class="ats-body">
+      <div class="ats-metric-card">
+        <div class="ats-circle-display" id="ats-big-score">92</div>
+        <div class="ats-circle-caption">ATS Content Optimization Score</div>
+      </div>
+
+      <div>
+        <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #34d399;">Passed Checks</h4>
+        <div class="ats-checklist" id="ats-passed-list">
+          <!-- Dynamic passed checks -->
+        </div>
+      </div>
+
+      <div>
+        <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #f59e0b;">Recommended Improvements</h4>
+        <div class="ats-tips" id="ats-tips-list">
+          <!-- Dynamic actionable tips -->
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ACTION VERBS MODAL -->
+  <div class="modal-overlay" id="verbs-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Strong Action Verbs Library</div>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-close-verbs" style="font-size: 18px;">✕</button>
+      </div>
+      <div class="modal-body" id="verbs-modal-body">
+        <!-- Dynamic Action Verbs rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- External Libraries & Configuration -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase/supabase-keys.js"></script>
+  <script src="js/config.js"></script>
+
+  <!-- Application Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/templates.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

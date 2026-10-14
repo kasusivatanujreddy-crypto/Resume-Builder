@@ -1,0 +1,18 @@
+{
+  "name": "craftcv-backend",
+  "version": "1.0.0",
+  "description": "CraftCV Studio Node.js server with Gemini AI Proxy and Supabase integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "resume-builder",
+    "gemini-ai",
+    "backend",
+    "ats"
+  ],
+  "author": "",
+  "license": "ISC"
+}
