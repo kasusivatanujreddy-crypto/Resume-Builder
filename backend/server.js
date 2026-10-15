@@ -419,23 +419,27 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    console.error(`\n❌ Error: Port ${PORT} is already in use by another process.`);
-    console.error(`👉 You can either stop the process using port ${PORT}, or set a different PORT in .env (e.g. PORT=3001).\n`);
-    process.exit(1);
-  } else {
-    console.error('Server error:', err);
-    process.exit(1);
-  }
-});
+if (require.main === module) {
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`\n❌ Error: Port ${PORT} is already in use by another process.`);
+      console.error(`👉 You can either stop the process using port ${PORT}, or set a different PORT in .env (e.g. PORT=3001).\n`);
+      process.exit(1);
+    } else {
+      console.error('Server error:', err);
+      process.exit(1);
+    }
+  });
 
-server.listen(PORT, () => {
-  const hasGemini = process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes('your_gemini_api_key_here');
-  console.log(`\n============================================================`);
-  console.log(`🚀 CraftCV Studio Server running at: http://localhost:${PORT}`);
-  console.log(`📂 Serving frontend from: ${BASE_DIR}`);
-  console.log(`🤖 Gemini AI Status:  ${hasGemini ? 'Configured ✅' : 'Waiting for GEMINI_API_KEY in .env ⚠️'}`);
-  console.log(`⚡ Supabase Database: ${supabase ? `Connected ✅ (${SUPABASE_URL})` : 'Waiting for SUPABASE_URL in .env ⚠️'}`);
-  console.log(`============================================================\n`);
-});
+  server.listen(PORT, () => {
+    const hasGemini = process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes('your_gemini_api_key_here');
+    console.log(`\n============================================================`);
+    console.log(`🚀 CraftCV Studio Server running at: http://localhost:${PORT}`);
+    console.log(`📂 Serving frontend from: ${BASE_DIR}`);
+    console.log(`🤖 Gemini AI Status:  ${hasGemini ? 'Configured ✅' : 'Waiting for GEMINI_API_KEY in .env ⚠️'}`);
+    console.log(`⚡ Supabase Database: ${supabase ? `Connected ✅ (${SUPABASE_URL})` : 'Waiting for SUPABASE_URL in .env ⚠️'}`);
+    console.log(`============================================================\n`);
+  });
+}
+
+module.exports = server;
