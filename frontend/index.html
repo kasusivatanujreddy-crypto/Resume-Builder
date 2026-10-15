@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CraftCV — Professional Interactive Resume Builder</title>
-  <meta name="description" content="State-of-the-art interactive resume builder with live A4 preview, ATS scoring, modern designer templates, and instant PDF export.">
-  
+  <meta name="description"
+    content="State-of-the-art interactive resume builder with live A4 preview, ATS scoring, modern designer templates, and instant PDF export.">
+
   <!-- Premium Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Slab:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Slab:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/templates.css">
 </head>
+
 <body>
 
   <!-- Top Navigation Bar -->
@@ -44,14 +49,35 @@
         <span class="ats-score-ring"></span>
         <span id="header-ats-score">ATS Score: 92/100</span>
       </div>
+
+      <div class="supabase-status-pill" id="supabase-status-pill"
+        title="Supabase Database Status — Click to verify connection">
+        <span class="status-dot"></span>
+        <span id="supabase-status-text">Supabase Live</span>
+      </div>
     </div>
 
     <!-- Actions & Exports -->
     <div class="header-actions">
+      <!-- Supabase Cloud Operations -->
+      <button type="button" class="btn btn-secondary btn-sm" id="btn-cloud-save" title="Save resume to Supabase Cloud">
+        <span>☁️</span> Cloud Save
+      </button>
+
+      <button type="button" class="btn btn-secondary btn-sm" id="btn-cloud-load"
+        title="Browse and open your resumes from Supabase">
+        <span>📂</span> Cloud Resumes
+      </button>
+
+      <button type="button" class="btn btn-secondary btn-sm" id="btn-share-resume"
+        title="Generate shareable public link">
+        <span>🔗</span> Share
+      </button>
+
       <!-- Sample Profiles Dropdown -->
       <div class="dropdown-wrap" id="sample-dropdown-wrap">
         <button type="button" class="btn btn-secondary btn-sm" id="btn-samples-toggle">
-          <span>📂</span> Load Sample ▾
+          <span>📋</span> Samples ▾
         </button>
         <div class="dropdown-menu">
           <button type="button" class="dropdown-item" data-sample="software_engineer">
@@ -67,11 +93,11 @@
       </div>
 
       <button type="button" class="btn btn-secondary btn-sm" id="btn-export-json" title="Download Resume Data as JSON">
-        <span>💾</span> Save JSON
+        <span>💾</span> JSON
       </button>
 
       <label class="btn btn-secondary btn-sm" style="cursor: pointer;" title="Import Resume Data from JSON">
-        <span>📥</span> Load JSON
+        <span>📥</span> Load
         <input type="file" id="file-import-json" accept=".json" style="display: none;">
       </label>
 
@@ -80,17 +106,17 @@
       </button>
 
       <button type="button" class="btn btn-primary" id="btn-print-pdf">
-        <span>🖨️</span> Download PDF
+        <span>🖨️</span> PDF
       </button>
     </div>
   </header>
 
   <!-- Workspace Container -->
   <main class="app-container" id="app-container">
-    
+
     <!-- LEFT PANE: Editor -->
     <section class="editor-pane" id="editor-pane">
-      
+
       <!-- Editor Nav Tabs -->
       <nav class="editor-nav-bar" id="editor-tabs">
         <button type="button" class="editor-nav-tab active" data-tab="tab-personal">👤 Contact</button>
@@ -105,7 +131,7 @@
 
       <!-- Scrollable Form Area -->
       <div class="editor-scroll-area">
-        
+
         <!-- 1. PERSONAL / CONTACT -->
         <div class="form-section active" id="tab-personal">
           <div class="section-head">
@@ -181,7 +207,8 @@
               <span>Professional Summary</span>
               <button type="button" class="badge-tag-btn" id="btn-suggest-summary">✨ Enhance Summary</button>
             </label>
-            <textarea id="field-summary" class="form-textarea" rows="4" placeholder="Brief 3-4 sentence elevator pitch highlighting key skills, domain expertise, and quantifiable impact..."></textarea>
+            <textarea id="field-summary" class="form-textarea" rows="4"
+              placeholder="Brief 3-4 sentence elevator pitch highlighting key skills, domain expertise, and quantifiable impact..."></textarea>
           </div>
         </div>
 
@@ -192,9 +219,15 @@
               <h2 class="section-head-title">Work Experience</h2>
               <p class="section-head-subtitle">Highlight achievements with quantifiable data & action verbs.</p>
             </div>
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-experience">
-              <span>+ Add Position</span>
-            </button>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-enhance-action-verbs"
+                title="Automatically ensure all bullet points start with strong action verbs like Spearheaded, Architected, Accelerated">
+                <span>⚡</span> Auto-Format Verbs
+              </button>
+              <button type="button" class="btn btn-primary btn-sm" id="btn-add-experience">
+                <span>+ Add Position</span>
+              </button>
+            </div>
           </div>
 
           <div class="card-stack" id="experience-cards-container">
@@ -337,7 +370,7 @@
 
     <!-- RIGHT PANE: Live Preview -->
     <section class="preview-pane" id="preview-pane">
-      
+
       <!-- Top Zoom & Status Toolbar -->
       <div class="preview-toolbar">
         <div class="preview-status">
@@ -349,8 +382,10 @@
           <button type="button" class="zoom-btn" id="btn-zoom-out" title="Zoom out">−</button>
           <span class="zoom-val" id="zoom-indicator">85%</span>
           <button type="button" class="zoom-btn" id="btn-zoom-in" title="Zoom in">+</button>
-          <button type="button" class="zoom-btn" id="btn-zoom-fit" title="Fit to window" style="font-size: 11px; width: auto; padding: 0 6px;">Fit</button>
-          <button type="button" class="zoom-btn" id="btn-zoom-100" title="100% Scale" style="font-size: 11px; width: auto; padding: 0 6px;">100%</button>
+          <button type="button" class="zoom-btn" id="btn-zoom-fit" title="Fit to window"
+            style="font-size: 11px; width: auto; padding: 0 6px;">Fit</button>
+          <button type="button" class="zoom-btn" id="btn-zoom-100" title="100% Scale"
+            style="font-size: 11px; width: auto; padding: 0 6px;">100%</button>
         </div>
       </div>
 
@@ -407,6 +442,47 @@
     </div>
   </div>
 
+  <!-- SUPABASE CLOUD RESUMES MODAL -->
+  <div class="modal-overlay" id="cloud-modal">
+    <div class="modal-content" style="max-width: 680px; width: 100%;">
+      <div class="modal-header">
+        <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <span>⚡</span>
+          <span>Supabase Cloud Resumes</span>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-close-cloud" style="font-size: 18px;">✕</button>
+      </div>
+      <div class="modal-body" id="cloud-modal-body">
+        <div style="text-align: center; padding: 30px; color: var(--text-secondary);">
+          <span>Connecting to Supabase...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHARE RESUME MODAL -->
+  <div class="modal-overlay" id="share-modal">
+    <div class="modal-content" style="max-width: 520px; width: 100%;">
+      <div class="modal-header">
+        <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+          <span>🔗</span>
+          <span>Share Your Resume</span>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-close-share" style="font-size: 18px;">✕</button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+        <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5;">
+          Anyone with this link can view your live resume canvas directly in their browser.
+        </p>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="share-link-input" readonly class="form-input"
+            style="flex: 1; font-family: monospace; font-size: 12.5px; background: rgba(0,0,0,0.3);" value="">
+          <button type="button" class="btn btn-primary" id="btn-copy-share-link">Copy Link</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
 
@@ -420,4 +496,5 @@
   <script src="js/templates.js"></script>
   <script src="js/app.js"></script>
 </body>
+
 </html>

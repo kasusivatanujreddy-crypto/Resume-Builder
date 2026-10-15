@@ -19,11 +19,16 @@
   // Initialize
   function init() {
     loadState();
+    initSupabaseClient();
     setupEventListeners();
     populateForm();
     setupDesignControls();
+    setupZoomControls();
+    setupActionVerbsModal();
     updateLivePreview();
     autoFitZoom();
+    checkSupabaseHealth();
+    checkUrlParams();
   }
 
   // Load state from local storage or default sample
@@ -39,6 +44,31 @@
 
     if (!resumeState) {
       resumeState = JSON.parse(JSON.stringify(SAMPLE_RESUMES.software_engineer));
+    }
+
+    // Auto-align default bullets with strong action verbs if legacy draft loaded
+    if (resumeState && Array.isArray(resumeState.experience)) {
+      resumeState.experience.forEach(exp => {
+        if (!Array.isArray(exp.bullets)) return;
+        exp.bullets = exp.bullets.map(b => {
+          if (b.startsWith('Mentored a cohort')) {
+            return 'Accelerated engineering velocity by mentoring a cohort of 14 software engineers across 3 geographic zones, conducting over 120 architecture design reviews.';
+          }
+          if (b.startsWith('Optimized bundle size')) {
+            return 'Accelerated page load performance by optimizing bundle size and Core Web Vitals, slashing initial Largest Contentful Paint (LCP) from 3.4s to 0.9s.';
+          }
+          if (b.startsWith('Collaborated closely')) {
+            return 'Spearheaded cross-functional design system initiative with product designers, establishing unified atomic tokens across web and mobile platforms.';
+          }
+          if (b.startsWith('Developed distributed')) {
+            return 'Architected distributed telemetry dashboards monitoring 40,000+ edge nodes using Go and ClickHouse.';
+          }
+          if (b.startsWith('Automated CI/CD')) {
+            return 'Accelerated deployment lead time from 4 hours to 9 minutes by automating CI/CD release workflows with GitHub Actions and Terraform.';
+          }
+          return b;
+        });
+      });
     }
   }
 
@@ -217,6 +247,14 @@
         renderExperienceList();
         updateLivePreview();
         showToast('Added new experience entry');
+      });
+    }
+
+    // Auto-Enhance Bullets with Strong Action Verbs
+    const btnEnhanceVerbs = document.getElementById('btn-enhance-action-verbs');
+    if (btnEnhanceVerbs) {
+      btnEnhanceVerbs.addEventListener('click', () => {
+        enhanceAllBulletsWithActionVerbs();
       });
     }
 
@@ -439,6 +477,68 @@
         window.print();
       });
     }
+
+    // Supabase Cloud Actions
+    const btnCloudSave = document.getElementById('btn-cloud-save');
+    if (btnCloudSave) {
+      btnCloudSave.addEventListener('click', () => {
+        saveResumeToCloud();
+      });
+    }
+
+    const btnCloudLoad = document.getElementById('btn-cloud-load');
+    if (btnCloudLoad) {
+      btnCloudLoad.addEventListener('click', () => {
+        openCloudModal();
+      });
+    }
+
+    const btnCloseCloud = document.getElementById('btn-close-cloud');
+    const cloudModal = document.getElementById('cloud-modal');
+    if (btnCloseCloud && cloudModal) {
+      btnCloseCloud.addEventListener('click', () => {
+        cloudModal.classList.remove('open');
+      });
+      cloudModal.addEventListener('click', (e) => {
+        if (e.target === cloudModal) cloudModal.classList.remove('open');
+      });
+    }
+
+    const btnShareResume = document.getElementById('btn-share-resume');
+    if (btnShareResume) {
+      btnShareResume.addEventListener('click', () => {
+        openShareModal();
+      });
+    }
+
+    const btnCloseShare = document.getElementById('btn-close-share');
+    const shareModal = document.getElementById('share-modal');
+    if (btnCloseShare && shareModal) {
+      btnCloseShare.addEventListener('click', () => {
+        shareModal.classList.remove('open');
+      });
+      shareModal.addEventListener('click', (e) => {
+        if (e.target === shareModal) shareModal.classList.remove('open');
+      });
+    }
+
+    const btnCopyShareLink = document.getElementById('btn-copy-share-link');
+    const shareLinkInput = document.getElementById('share-link-input');
+    if (btnCopyShareLink && shareLinkInput) {
+      btnCopyShareLink.addEventListener('click', () => {
+        shareLinkInput.select();
+        navigator.clipboard?.writeText(shareLinkInput.value);
+        showToast('Share link copied to clipboard! 📋', 'success');
+      });
+    }
+
+    const supabaseStatusPill = document.getElementById('supabase-status-pill');
+    if (supabaseStatusPill) {
+      supabaseStatusPill.addEventListener('click', async () => {
+        showToast('Verifying Supabase connection...', 'info');
+        await checkSupabaseHealth();
+      });
+    }
   }
 
   function bindPersonalInput(elementId, stateKey) {
@@ -567,14 +667,22 @@
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
             <label class="form-label" style="margin:0;">Key Responsibilities & Achievements</label>
             <div style="display:flex; gap: 6px;">
-              <button type="button" class="badge-tag-btn btn-open-verbs-helper">⚡ Action Verbs</button>
+              <button type="button" class="badge-tag-btn btn-open-verbs-helper">⚡ All Verbs</button>
               <button type="button" class="btn btn-secondary btn-sm btn-add-bullet">+ Bullet</button>
             </div>
+          </div>
+          <div class="quick-verbs-bar" style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;">
+            <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Top Verbs:</span>
+            <button type="button" class="verb-quick-pill" data-verb="Spearheaded">Spearheaded</button>
+            <button type="button" class="verb-quick-pill" data-verb="Architected">Architected</button>
+            <button type="button" class="verb-quick-pill" data-verb="Accelerated">Accelerated</button>
+            <button type="button" class="verb-quick-pill" data-verb="Engineered">Engineered</button>
+            <button type="button" class="verb-quick-pill" data-verb="Orchestrated">Orchestrated</button>
           </div>
           <div class="bullets-list">
             ${(exp.bullets || []).map((b, bIndex) => `
               <div class="bullet-row" data-bullet-idx="${bIndex}">
-                <textarea class="form-textarea bullet-input" rows="2" placeholder="Start with a strong action verb (e.g. Spearheaded, Engineered...)...">${escapeHtml(b)}</textarea>
+                <textarea class="form-textarea bullet-input" rows="2" placeholder="Begin with a strong action verb (Spearheaded, Architected, Accelerated)...">${escapeHtml(b)}</textarea>
                 <button type="button" class="btn btn-ghost btn-sm btn-del-bullet" title="Remove bullet">✕</button>
               </div>
             `).join('')}
@@ -666,14 +774,44 @@
 
       addBulletBtn.addEventListener('click', () => {
         if (!exp.bullets) exp.bullets = [];
-        exp.bullets.push('Engineered new component improving workflow throughput by 20%.');
+        const templates = [
+          'Spearheaded key architecture initiative, achieving 30% performance boost.',
+          'Architected scalable microservices infrastructure handling 50k+ daily users.',
+          'Accelerated release cycle from 3 weeks to 2 days through automated CI/CD pipelines.'
+        ];
+        const nextTemplate = templates[exp.bullets.length % templates.length];
+        exp.bullets.push(nextTemplate);
         saveState();
         renderExperienceList();
         updateLivePreview();
+        showToast('Added bullet with strong action verb!', 'info');
       });
 
       verbsBtn.addEventListener('click', () => {
         openActionVerbsModal(card.querySelector('.bullet-input'));
+      });
+
+      // Quick action verb pills inside this card
+      card.querySelectorAll('.verb-quick-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          const verb = pill.getAttribute('data-verb');
+          let target = activeBulletTarget && card.contains(activeBulletTarget) 
+            ? activeBulletTarget 
+            : card.querySelector('.bullet-input');
+          if (target) {
+            target.value = applyVerbToBulletText(target.value, verb);
+            target.dispatchEvent(new Event('input'));
+            target.focus();
+            showToast(`Applied "${verb}" to bullet point!`, 'success');
+          } else {
+            if (!exp.bullets) exp.bullets = [];
+            exp.bullets.push(`${verb} core initiative resulting in measurable business growth.`);
+            saveState();
+            renderExperienceList();
+            updateLivePreview();
+            showToast(`Added bullet starting with "${verb}"`, 'success');
+          }
+        });
       });
 
       container.appendChild(card);
@@ -1182,6 +1320,15 @@
     document.documentElement.style.setProperty('--resume-font', fontFamily);
     document.documentElement.style.setProperty('--resume-font-size', fontSize);
 
+    // Recalculate layout bounds, margin compensation & page break guides
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => {
+        adjustViewportScroll();
+      });
+    } else {
+      adjustViewportScroll();
+    }
+
     // Calculate ATS Score
     const analysis = calculateResumeScore(resumeState);
     updateAtsUI(analysis);
@@ -1221,17 +1368,44 @@
       if (analysis.tips.length === 0) {
         tipsList.innerHTML = '<div class="ats-item" style="color:#34d399;">🌟 Outstanding! Your resume meets all top ATS and recruiter criteria.</div>';
       } else {
-        tipsList.innerHTML = analysis.tips.map(t => `
-          <div class="ats-item">
-            <span class="icon-tip">💡</span>
-            <span>${escapeHtml(t)}</span>
-          </div>
-        `).join('');
+        tipsList.innerHTML = analysis.tips.map(t => {
+          const isActionVerbTip = t.toLowerCase().includes('action verbs') || t.toLowerCase().includes('spearheaded');
+          return `
+            <div class="ats-item" style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="icon-tip">💡</span>
+                <span>${escapeHtml(t)}</span>
+              </div>
+              ${isActionVerbTip ? `
+                <div style="margin-left: 24px; margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap;">
+                  <button type="button" class="btn btn-primary btn-xs btn-quick-fix-verbs" style="font-size: 11px; padding: 3px 9px;">
+                    ⚡ Auto-Fix All Bullets
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-xs btn-open-verbs-from-tip" style="font-size: 11px; padding: 3px 9px;">
+                    📖 Verbs Library
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+
+        tipsList.querySelectorAll('.btn-quick-fix-verbs').forEach(btn => {
+          btn.addEventListener('click', () => {
+            enhanceAllBulletsWithActionVerbs();
+          });
+        });
+
+        tipsList.querySelectorAll('.btn-open-verbs-from-tip').forEach(btn => {
+          btn.addEventListener('click', () => {
+            openActionVerbsModal();
+          });
+        });
       }
     }
   }
 
-  // Zoom Controls Implementation
+  // Zoom Controls & Smooth Vertical Viewport Engine
   function setupZoomControls() {
     const zoomIn = document.getElementById('btn-zoom-in');
     const zoomOut = document.getElementById('btn-zoom-out');
@@ -1239,15 +1413,18 @@
     const zoom100 = document.getElementById('btn-zoom-100');
     const zoomIndicator = document.getElementById('zoom-indicator');
     const wrapper = document.getElementById('preview-scale-wrapper');
+    const viewport = document.getElementById('preview-viewport');
+    const btnScrollTop = document.getElementById('btn-scroll-preview-top');
 
     function applyZoom(zoom) {
-      currentZoom = Math.max(0.4, Math.min(1.4, zoom));
+      currentZoom = Math.max(0.4, Math.min(1.4, Math.round(zoom * 100) / 100));
       if (wrapper) {
         wrapper.style.transform = `scale(${currentZoom})`;
       }
       if (zoomIndicator) {
         zoomIndicator.textContent = `${Math.round(currentZoom * 100)}%`;
       }
+      adjustViewportScroll();
     }
 
     if (zoomIn) zoomIn.addEventListener('click', () => applyZoom(currentZoom + 0.08));
@@ -1255,9 +1432,38 @@
     if (zoom100) zoom100.addEventListener('click', () => applyZoom(1.0));
     if (zoomFit) zoomFit.addEventListener('click', autoFitZoom);
 
-    // Keyboard shortcuts (Cmd/Ctrl + & -)
+    // Smooth Mouse Wheel: Ctrl/Cmd + Wheel = Zoom; Normal Wheel = Smooth Vertical Scroll
+    if (viewport) {
+      viewport.addEventListener('wheel', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          const zoomDelta = e.deltaY < 0 ? 0.06 : -0.06;
+          applyZoom(currentZoom + zoomDelta);
+        }
+      }, { passive: false });
+
+      // Floating Scroll-to-Top Button visibility toggle
+      viewport.addEventListener('scroll', () => {
+        if (btnScrollTop) {
+          if (viewport.scrollTop > 220) {
+            btnScrollTop.classList.add('visible');
+          } else {
+            btnScrollTop.classList.remove('visible');
+          }
+        }
+      });
+    }
+
+    // Scroll to Top action
+    if (btnScrollTop && viewport) {
+      btnScrollTop.addEventListener('click', () => {
+        viewport.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+
+    // Window resize handler: re-adjust scroll margin
     window.addEventListener('resize', () => {
-      // Auto adjust if window resizes substantially
+      adjustViewportScroll();
     });
   }
 
@@ -1270,12 +1476,80 @@
     const availableWidth = viewport.clientWidth - 80; // Margin padding
     const sheetWidth = 794; // approx A4 width in px at 96 DPI
     let scale = availableWidth / sheetWidth;
-    scale = Math.max(0.45, Math.min(1.05, scale));
+    scale = Math.max(0.45, Math.min(1.05, Math.round(scale * 100) / 100));
 
     currentZoom = scale;
     wrapper.style.transform = `scale(${currentZoom})`;
     if (zoomIndicator) {
       zoomIndicator.textContent = `${Math.round(currentZoom * 100)}%`;
+    }
+    adjustViewportScroll();
+  }
+
+  // Adjust Viewport Scroll Bounds to prevent CSS transform scale clipping or dead space
+  function adjustViewportScroll() {
+    const wrapper = document.getElementById('preview-scale-wrapper');
+    if (!wrapper) return;
+
+    const sheet = wrapper.querySelector('.resume-sheet');
+    if (!sheet) return;
+
+    // Standard A4 height is 1123px (297mm at 96 DPI)
+    const naturalHeight = sheet.offsetHeight || 1123;
+    const scaledHeight = naturalHeight * currentZoom;
+    const diff = scaledHeight - naturalHeight;
+
+    // Compensate layout box margin so the parent viewport scroll container
+    // accounts for CSS transform scaling without bottom clipping or empty dead space
+    const targetMargin = Math.round(diff + 60);
+    wrapper.style.marginBottom = `${targetMargin}px`;
+
+    // Update dynamic A4 Page Break Guide and Page Count Badge
+    updatePageBreakGuide(naturalHeight);
+  }
+
+  // Visual A4 Page-Break Guide Generator
+  function updatePageBreakGuide(sheetHeight) {
+    const wrapper = document.getElementById('preview-scale-wrapper');
+    if (!wrapper) return;
+
+    // Clear old page break indicators
+    wrapper.querySelectorAll('.page-break-indicator').forEach(el => el.remove());
+
+    const A4_HEIGHT = 1123; // 297mm in pixels at standard 96 DPI
+    const pageCount = Math.max(1, Math.ceil((sheetHeight - 12) / A4_HEIGHT));
+
+    // Update toolbar page count badge
+    const pageBadge = document.getElementById('preview-page-count');
+    if (pageBadge) {
+      pageBadge.textContent = `${pageCount} Page${pageCount > 1 ? 's' : ''} (A4)`;
+      if (pageCount > 1) {
+        pageBadge.style.background = 'rgba(239, 68, 68, 0.18)';
+        pageBadge.style.color = '#f87171';
+        pageBadge.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+      } else {
+        pageBadge.style.background = 'rgba(16, 185, 129, 0.15)';
+        pageBadge.style.color = '#34d399';
+        pageBadge.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+      }
+    }
+
+    // Insert visual page boundary indicators when resume nears or overflows standard A4 height
+    if (sheetHeight > A4_HEIGHT * 0.94) {
+      for (let p = 1; p <= pageCount; p++) {
+        const breakPos = p * A4_HEIGHT;
+        if (breakPos <= sheetHeight + 120) {
+          const indicator = document.createElement('div');
+          indicator.className = 'page-break-indicator';
+          indicator.style.top = `${breakPos}px`;
+          indicator.innerHTML = `
+            <div class="page-break-badge">
+              Page ${p} / Page ${p + 1} Boundary (297mm Cutoff)
+            </div>
+          `;
+          wrapper.appendChild(indicator);
+        }
+      }
     }
   }
 
@@ -1294,20 +1568,32 @@
       if (e.target === modal) modal.classList.remove('open');
     });
 
-    body.innerHTML = Object.entries(ACTION_VERBS).map(([category, verbs]) => `
-      <div class="verbs-category">
-        <div class="verbs-cat-title">${escapeHtml(category)}</div>
+    body.innerHTML = `
+      <div class="verbs-category" style="background: rgba(59,130,246,0.1); padding: 12px 14px; border-radius: var(--radius-md); border: 1px solid rgba(59,130,246,0.3);">
+        <div class="verbs-cat-title" style="color: #60a5fa; font-size: 12.5px; margin-bottom: 6px;">⭐ Top Recommended ATS Action Verbs</div>
         <div class="verbs-tags-list">
-          ${verbs.map(v => `<button type="button" class="verb-tag-btn" data-verb="${v}">${v}</button>`).join('')}
+          <button type="button" class="verb-tag-btn" data-verb="Spearheaded" style="background: var(--accent-blue); color: #fff; font-weight: 700;">✦ Spearheaded</button>
+          <button type="button" class="verb-tag-btn" data-verb="Architected" style="background: var(--accent-blue); color: #fff; font-weight: 700;">✦ Architected</button>
+          <button type="button" class="verb-tag-btn" data-verb="Accelerated" style="background: var(--accent-blue); color: #fff; font-weight: 700;">✦ Accelerated</button>
+          <button type="button" class="verb-tag-btn" data-verb="Engineered" style="background: rgba(59,130,246,0.25); color: #93c5fd; font-weight: 600;">Engineered</button>
+          <button type="button" class="verb-tag-btn" data-verb="Orchestrated" style="background: rgba(59,130,246,0.25); color: #93c5fd; font-weight: 600;">Orchestrated</button>
         </div>
       </div>
-    `).join('');
+      ${Object.entries(ACTION_VERBS).map(([category, verbs]) => `
+        <div class="verbs-category">
+          <div class="verbs-cat-title">${escapeHtml(category)}</div>
+          <div class="verbs-tags-list">
+            ${verbs.map(v => `<button type="button" class="verb-tag-btn" data-verb="${v}">${v}</button>`).join('')}
+          </div>
+        </div>
+      `).join('')}
+    `;
 
     body.querySelectorAll('.verb-tag-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const verb = btn.getAttribute('data-verb');
         if (activeBulletTarget) {
-          activeBulletTarget.value = `${verb} ` + activeBulletTarget.value.replace(/^[A-Za-z]+ /, '');
+          activeBulletTarget.value = applyVerbToBulletText(activeBulletTarget.value, verb);
           activeBulletTarget.dispatchEvent(new Event('input'));
           showToast(`Applied "${verb}" to bullet point!`, 'success');
         } else {
@@ -1319,10 +1605,528 @@
     });
   }
 
+  // Intelligent Action Verb Replacement Helper
+  function applyVerbToBulletText(text, verb) {
+    if (!text || !text.trim()) {
+      return `${verb} `;
+    }
+    let clean = text.trim().replace(/^["'“‘•\-\*\s]+/, '');
+    const weakPrefixes = [
+      /^responsible for (?:the |our )?/i,
+      /^helped (?:with|to) (?:the |our )?/i,
+      /^helped (?:the |our )?/i,
+      /^worked on (?:the |our )?/i,
+      /^working on (?:the |our )?/i,
+      /^participated in (?:the |our )?/i,
+      /^assisted (?:in|with) (?:the |our )?/i,
+      /^was in charge of (?:the |our )?/i,
+      /^in charge of (?:the |our )?/i,
+      /^handled (?:the |our )?/i,
+      /^managed (?:the |our )?/i,
+      /^created (?:a |the |our )?/i,
+      /^built (?:a |the |our )?/i,
+      /^made (?:a |the |our )?/i,
+      /^did (?:a |the |our )?/i,
+      /^[A-Za-z]+(?:ed|ing|s)?\s+/
+    ];
+    for (const rx of weakPrefixes) {
+      if (rx.test(clean)) {
+        clean = clean.replace(rx, '');
+        break;
+      }
+    }
+    if (clean) {
+      clean = clean.charAt(0).toLowerCase() + clean.slice(1);
+      return `${verb} ${clean}`;
+    }
+    return `${verb} `;
+  }
+
+  // Auto-Enhance All Bullets Across All Experience Roles
+  function enhanceAllBulletsWithActionVerbs() {
+    if (!resumeState.experience || resumeState.experience.length === 0) {
+      showToast('Add at least one work experience entry first.', 'info');
+      return;
+    }
+
+    const priorityVerbs = ['Spearheaded', 'Architected', 'Accelerated', 'Engineered', 'Orchestrated'];
+    let upgradedCount = 0;
+    let verbIdx = 0;
+
+    resumeState.experience.forEach(exp => {
+      if (!Array.isArray(exp.bullets)) return;
+      exp.bullets = exp.bullets.map(b => {
+        const clean = b.trim().replace(/^["'“‘•\-\*\s]+/, '');
+        const firstWord = clean.split(/\s+/)[0]?.toLowerCase().replace(/[^\w]/g, '');
+        const allVerbs = Object.values(ACTION_VERBS).flat().map(v => v.toLowerCase());
+        const hasStrongVerb = firstWord && (
+          allVerbs.some(v => firstWord === v || firstWord.startsWith(v.slice(0, 4))) ||
+          ['spearheaded', 'architected', 'accelerated', 'engineered', 'orchestrated'].includes(firstWord)
+        );
+
+        if (!hasStrongVerb) {
+          const chosenVerb = priorityVerbs[verbIdx % priorityVerbs.length];
+          verbIdx++;
+          upgradedCount++;
+          return applyVerbToBulletText(b, chosenVerb);
+        }
+        return b;
+      });
+    });
+
+    saveState();
+    renderExperienceList();
+    updateLivePreview();
+
+    if (upgradedCount > 0) {
+      showToast(`Enhanced ${upgradedCount} bullet(s) with strong action verbs (Spearheaded, Architected, Accelerated)! ⚡`, 'success');
+    } else {
+      showToast('All bullets already begin with strong action verbs! 🌟', 'success');
+    }
+  }
+
   function openActionVerbsModal(targetInput) {
     if (targetInput) activeBulletTarget = targetInput;
     const modal = document.getElementById('verbs-modal');
     if (modal) modal.classList.add('open');
+  }
+
+  // ===========================================================================
+  // ⚡ SUPABASE CLOUD SYNC & CLIENT INTEGRATION
+  // ===========================================================================
+  let supabaseClient = null;
+
+  function initSupabaseClient() {
+    try {
+      const url = (window.SUPABASE_KEYS && window.SUPABASE_KEYS.url) || 
+                  (window.APP_CONFIG && window.APP_CONFIG.supabase && window.APP_CONFIG.supabase.url);
+      const anonKey = (window.SUPABASE_KEYS && window.SUPABASE_KEYS.anonKey) || 
+                      (window.APP_CONFIG && window.APP_CONFIG.supabase && window.APP_CONFIG.supabase.anonKey);
+
+      if (url && anonKey && !url.includes('YOUR_') && !url.includes('PASTE_YOUR') && window.supabase && window.supabase.createClient) {
+        supabaseClient = window.supabase.createClient(url, anonKey);
+        window.supabaseClient = supabaseClient;
+      }
+    } catch (e) {
+      console.warn('Supabase client init warning:', e);
+    }
+  }
+
+  async function checkSupabaseHealth() {
+    const pill = document.getElementById('supabase-status-pill');
+    const text = document.getElementById('supabase-status-text');
+    if (!pill || !text) return;
+
+    // Check through backend API or directly through Supabase client
+    try {
+      const res = await fetch('/api/supabase/status');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.connected) {
+          pill.classList.remove('error');
+          pill.classList.add('connected');
+          text.textContent = 'Supabase Live';
+          pill.title = `Connected to Supabase PostgreSQL • ${data.resumesCount} resume(s) in cloud`;
+          return;
+        }
+      }
+    } catch (e) {}
+
+    if (supabaseClient) {
+      try {
+        const { count, error } = await supabaseClient.from('resumes').select('*', { count: 'exact', head: true });
+        if (!error) {
+          pill.classList.remove('error');
+          pill.classList.add('connected');
+          text.textContent = 'Supabase Live';
+          pill.title = `Connected directly to Supabase Cloud • ${count || 0} resume(s) in cloud`;
+          return;
+        }
+      } catch (err) {
+        console.warn('Direct Supabase check error:', err);
+      }
+    }
+
+    pill.classList.remove('connected');
+    pill.classList.add('error');
+    text.textContent = 'Offline';
+    pill.title = 'Supabase is currently offline or unreachable. Check API keys in backend/.env or frontend/supabase/supabase-keys.js.';
+  }
+
+  // Save current resume to Supabase Cloud
+  async function saveResumeToCloud() {
+    const saveBtn = document.getElementById('btn-cloud-save');
+    const origHtml = saveBtn ? saveBtn.innerHTML : '';
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<span>⏳</span> Saving...';
+    }
+
+    const analysis = calculateResumeScore(resumeState);
+    const p = resumeState.personal || {};
+    const title = p.fullName ? `${p.fullName} - ${p.title || 'Resume'}` : (resumeState.title || 'My Professional Resume');
+
+    const payload = {
+      id: resumeState.cloudResumeId || undefined,
+      title: title,
+      personal: resumeState.personal || {},
+      experience: resumeState.experience || [],
+      education: resumeState.education || [],
+      skills: resumeState.skills || [],
+      projects: resumeState.projects || [],
+      certifications: resumeState.certifications || [],
+      languages: resumeState.languages || [],
+      settings: resumeState.settings || {},
+      atsScore: analysis.score || 0,
+      isPublic: true
+    };
+
+    try {
+      let savedResume = null;
+
+      // Try Backend endpoint first (uses service role key if needed)
+      try {
+        const res = await fetch('/api/resumes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          const result = await res.json();
+          if (result.success && result.resume) {
+            savedResume = result.resume;
+          }
+        }
+      } catch (e) {}
+
+      // Fallback: direct browser Supabase client
+      if (!savedResume && supabaseClient) {
+        const dbPayload = {
+          title: payload.title,
+          personal_info: payload.personal,
+          experience: payload.experience,
+          education: payload.education,
+          skills: payload.skills,
+          projects: payload.projects,
+          certifications: payload.certifications,
+          languages: payload.languages,
+          settings: payload.settings,
+          ats_score: payload.atsScore,
+          is_public: true
+        };
+
+        if (payload.id) {
+          const { data, error } = await supabaseClient
+            .from('resumes')
+            .update(dbPayload)
+            .eq('id', payload.id)
+            .select()
+            .single();
+          if (error) throw error;
+          savedResume = data;
+        } else {
+          const { data, error } = await supabaseClient
+            .from('resumes')
+            .insert(dbPayload)
+            .select()
+            .single();
+          if (error) throw error;
+          savedResume = data;
+        }
+      }
+
+      if (!savedResume) {
+        throw new Error('Failed to reach Supabase backend or database client');
+      }
+
+      resumeState.cloudResumeId = savedResume.id;
+      resumeState.cloudShareId = savedResume.share_id;
+      saveState();
+
+      showToast('Resume saved to Supabase Cloud! ☁️', 'success');
+      checkSupabaseHealth();
+    } catch (err) {
+      console.error('Cloud Save Error:', err);
+      showToast(`Cloud save error: ${err.message}`, 'error');
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = origHtml;
+      }
+    }
+  }
+
+  // Open Supabase Cloud Resumes Modal
+  async function openCloudModal() {
+    const modal = document.getElementById('cloud-modal');
+    const body = document.getElementById('cloud-modal-body');
+    if (!modal || !body) return;
+
+    modal.classList.add('open');
+    body.innerHTML = `
+      <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+        <div style="font-size: 28px; margin-bottom: 10px;">⏳</div>
+        <div>Loading cloud resumes from Supabase...</div>
+      </div>
+    `;
+
+    try {
+      let resumes = null;
+
+      // Try Backend endpoint
+      try {
+        const res = await fetch('/api/resumes');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) resumes = data.resumes;
+        }
+      } catch (e) {}
+
+      // Direct client fallback
+      if (!resumes && supabaseClient) {
+        const { data, error } = await supabaseClient
+          .from('resumes')
+          .select('id, title, slug, share_id, ats_score, is_public, updated_at, created_at')
+          .order('updated_at', { ascending: false });
+        if (!error) resumes = data;
+      }
+
+      if (!resumes || resumes.length === 0) {
+        body.innerHTML = `
+          <div class="cloud-empty-state">
+            <div class="cloud-empty-icon">☁️</div>
+            <h3 style="font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 8px;">No Resumes in Supabase Yet</h3>
+            <p style="font-size: 13px; max-width: 420px; margin: 0 auto 20px;">
+              Your Supabase PostgreSQL database is connected and active. Click "Save Current Resume Now" to store your resume in the cloud.
+            </p>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-cloud-save-from-empty">
+              <span>☁️</span> Save Current Resume Now
+            </button>
+          </div>
+        `;
+        const emptySave = document.getElementById('btn-cloud-save-from-empty');
+        if (emptySave) {
+          emptySave.addEventListener('click', async () => {
+            modal.classList.remove('open');
+            await saveResumeToCloud();
+          });
+        }
+        return;
+      }
+
+      // Render resumes list
+      body.innerHTML = `
+        <div class="cloud-resumes-list">
+          ${resumes.map(r => {
+            const dateStr = new Date(r.updated_at || r.created_at).toLocaleDateString(undefined, {
+              year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            const ats = r.ats_score != null ? r.ats_score : '—';
+            const isCurrent = resumeState.cloudResumeId === r.id;
+            return `
+              <div class="cloud-resume-card" data-id="${r.id}">
+                <div class="cloud-card-info">
+                  <div class="cloud-card-title">
+                    ${escapeHtml(r.title || 'Untitled Resume')}
+                    ${isCurrent ? '<span style="font-size: 11px; margin-left: 6px; padding: 2px 7px; background: rgba(59,130,246,0.2); color: #93c5fd; border-radius: 4px;">Active</span>' : ''}
+                  </div>
+                  <div class="cloud-card-meta">
+                    <span>🕒 ${dateStr}</span>
+                    <span class="cloud-badge-ats">ATS: ${ats}/100</span>
+                    <span>Share ID: <code>${r.share_id || '—'}</code></span>
+                  </div>
+                </div>
+                <div class="cloud-card-actions">
+                  <button type="button" class="btn btn-secondary btn-sm btn-cloud-open" data-id="${r.id}">
+                    <span>📂</span> Open
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm btn-cloud-share" data-share="${r.share_id}">
+                    <span>🔗</span> Share
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-sm btn-cloud-delete" data-id="${r.id}" style="color: #f87171;" title="Delete from Supabase">
+                    <span>🗑</span>
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+
+      // Event listeners for list items
+      body.querySelectorAll('.btn-cloud-open').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          modal.classList.remove('open');
+          loadResumeFromCloud(id);
+        });
+      });
+
+      body.querySelectorAll('.btn-cloud-share').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const shareId = btn.getAttribute('data-share');
+          modal.classList.remove('open');
+          openShareModal(shareId);
+        });
+      });
+
+      body.querySelectorAll('.btn-cloud-delete').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          if (confirm('Are you sure you want to delete this resume from Supabase?')) {
+            await deleteResumeFromCloud(id);
+            openCloudModal(); // refresh view
+          }
+        });
+      });
+    } catch (err) {
+      body.innerHTML = `
+        <div style="text-align: center; padding: 30px; color: #f87171;">
+          <div>Failed to load resumes: ${escapeHtml(err.message)}</div>
+        </div>
+      `;
+    }
+  }
+
+  // Load a resume by ID from Supabase
+  async function loadResumeFromCloud(id) {
+    showToast('Fetching resume from Supabase Cloud...', 'info');
+    try {
+      let r = null;
+      try {
+        const res = await fetch(`/api/resumes/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) r = data.resume;
+        }
+      } catch (e) {}
+
+      if (!r && supabaseClient) {
+        const { data, error } = await supabaseClient.from('resumes').select('*').eq('id', id).single();
+        if (!error) r = data;
+      }
+
+      if (!r) throw new Error('Resume not found in Supabase database');
+
+      resumeState = {
+        cloudResumeId: r.id,
+        cloudShareId: r.share_id,
+        title: r.title,
+        personal: r.personal_info || {},
+        experience: Array.isArray(r.experience) ? r.experience : [],
+        education: Array.isArray(r.education) ? r.education : [],
+        skills: Array.isArray(r.skills) ? r.skills : [],
+        projects: Array.isArray(r.projects) ? r.projects : [],
+        certifications: Array.isArray(r.certifications) ? r.certifications : [],
+        languages: Array.isArray(r.languages) ? r.languages : [],
+        settings: r.settings || { template: 'modern', primaryColor: '#2563eb', fontFamily: 'Inter', fontSize: 'normal' }
+      };
+
+      saveState();
+      populateForm();
+      setupDesignControls();
+      updateLivePreview();
+      showToast(`Loaded "${r.title || 'Resume'}" from Supabase! ☁️`, 'success');
+    } catch (err) {
+      console.error('Error loading resume:', err);
+      showToast(`Failed to load resume: ${err.message}`, 'error');
+    }
+  }
+
+  // Delete resume from Supabase
+  async function deleteResumeFromCloud(id) {
+    try {
+      let deleted = false;
+      try {
+        const res = await fetch(`/api/resumes/${id}`, { method: 'DELETE' });
+        if (res.ok) deleted = true;
+      } catch (e) {}
+
+      if (!deleted && supabaseClient) {
+        const { error } = await supabaseClient.from('resumes').delete().eq('id', id);
+        if (!error) deleted = true;
+      }
+
+      if (deleted) {
+        if (resumeState.cloudResumeId === id) {
+          delete resumeState.cloudResumeId;
+          delete resumeState.cloudShareId;
+          saveState();
+        }
+        showToast('Resume deleted from Supabase', 'success');
+      } else {
+        throw new Error('Delete operation failed');
+      }
+    } catch (err) {
+      showToast(`Error deleting resume: ${err.message}`, 'error');
+    }
+  }
+
+  // Open Share Modal
+  function openShareModal(shareId) {
+    const sId = shareId || resumeState.cloudShareId;
+    if (!sId) {
+      if (confirm('This resume needs to be saved to Supabase Cloud before generating a share link. Save now?')) {
+        saveResumeToCloud().then(() => {
+          if (resumeState.cloudShareId) {
+            openShareModal(resumeState.cloudShareId);
+          }
+        });
+      }
+      return;
+    }
+
+    const modal = document.getElementById('share-modal');
+    const input = document.getElementById('share-link-input');
+    if (!modal || !input) return;
+
+    const shareUrl = `${window.location.origin}${window.location.pathname}?share=${sId}`;
+    input.value = shareUrl;
+    modal.classList.add('open');
+  }
+
+  // Check URL params for ?share= or ?id=
+  async function checkUrlParams() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const shareId = params.get('share');
+      const resumeId = params.get('id');
+
+      if (shareId) {
+        showToast('Loading shared resume from Supabase...', 'info');
+        try {
+          const res = await fetch(`/api/resumes/share/${shareId}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.resume) {
+              const r = data.resume;
+              resumeState = {
+                cloudResumeId: r.id,
+                cloudShareId: r.share_id,
+                title: r.title,
+                personal: r.personal_info || {},
+                experience: r.experience || [],
+                education: r.education || [],
+                skills: r.skills || [],
+                projects: r.projects || [],
+                certifications: r.certifications || [],
+                languages: r.languages || [],
+                settings: r.settings || {}
+              };
+              populateForm();
+              setupDesignControls();
+              updateLivePreview();
+              showToast(`Viewing shared resume: ${r.title}`, 'success');
+              return;
+            }
+          }
+        } catch (e) {}
+      } else if (resumeId) {
+        await loadResumeFromCloud(resumeId);
+      }
+    } catch (e) {
+      console.warn('URL param parse error:', e);
+    }
   }
 
   // Run on DOM ready

@@ -28,7 +28,7 @@
   margin: 0 auto;
   box-shadow: 0 20px 45px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
   border-radius: 4px;
-  overflow: hidden;
+  overflow: visible;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -1093,5 +1093,9 @@
   .classic-edu-item {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+  }
+
+  .page-break-indicator {
+    display: none !important;
   }
 }

@@ -29,7 +29,7 @@ const SAMPLE_RESUMES = {
         bullets: [
           'Architected and deployed high-throughput event processing pipelines processing 180M+ daily transactions with 99.999% uptime.',
           'Spearheaded migration of legacy monolith to gRPC-based microservices architecture, cutting end-to-end API latency by 38%.',
-          'Mentored a cohort of 14 software engineers across 3 geographic zones, conducting over 120 architecture design reviews.'
+          'Accelerated engineering velocity by mentoring a cohort of 14 software engineers across 3 geographic zones, conducting over 120 architecture design reviews.'
         ]
       },
       {
@@ -42,8 +42,8 @@ const SAMPLE_RESUMES = {
         current: false,
         bullets: [
           'Engineered real-time booking collaboration engine using React, TypeScript, and WebSockets, boosting checkout conversions by 18.4%.',
-          'Optimized bundle size and Core Web Vitals, slashing initial Largest Contentful Paint (LCP) from 3.4s to 0.9s.',
-          'Collaborated closely with product designers to establish unified atomic design tokens across web and mobile platforms.'
+          'Accelerated page load performance by optimizing bundle size and Core Web Vitals, slashing initial Largest Contentful Paint (LCP) from 3.4s to 0.9s.',
+          'Spearheaded cross-functional design system initiative with product designers, establishing unified atomic tokens across web and mobile platforms.'
         ]
       },
       {
@@ -55,8 +55,8 @@ const SAMPLE_RESUMES = {
         endDate: '2019-05',
         current: false,
         bullets: [
-          'Developed distributed telemetry dashboards monitoring 40,000+ edge nodes using Go and ClickHouse.',
-          'Automated CI/CD release workflows with GitHub Actions and Terraform, trimming deployment lead time from 4 hours to 9 minutes.'
+          'Architected distributed telemetry dashboards monitoring 40,000+ edge nodes using Go and ClickHouse.',
+          'Accelerated deployment lead time from 4 hours to 9 minutes by automating CI/CD release workflows with GitHub Actions and Terraform.'
         ]
       }
     ],
@@ -163,8 +163,8 @@ const SAMPLE_RESUMES = {
         current: true,
         bullets: [
           'Spearheaded the 0-to-1 launch of AI Expense Auto-Categorization, saving enterprise customers 14,000+ monthly manual audit hours.',
-          'Managed end-to-end product roadmap and discovery for financial analytics tier, driving $16M in new annual recurring revenue.',
-          'Partnered with Engineering, Compliance, and Marketing across 4 agile sprint squads to sustain 99.4% on-time feature delivery.'
+          'Architected end-to-end product roadmap and discovery for financial analytics tier, driving $16M in new annual recurring revenue.',
+          'Accelerated cross-functional delivery across 4 agile sprint squads to sustain 99.4% on-time milestone execution.'
         ]
       },
       {
@@ -176,8 +176,8 @@ const SAMPLE_RESUMES = {
         endDate: '2021-03',
         current: false,
         bullets: [
-          'Redesigned the portfolio rebalancing onboarding journey, driving a 22% increase in deposit conversion within 60 days.',
-          'Devised and executed 45+ rigorous A/B experiments across 8M monthly active users to optimize customer acquisition cost (CAC) by 19%.'
+          'Spearheaded overhaul of portfolio rebalancing onboarding journey, driving a 22% increase in deposit conversion within 60 days.',
+          'Accelerated customer acquisition velocity by executing 45+ rigorous A/B experiments across 8M monthly active users, optimizing CAC by 19%.'
         ]
       }
     ],
@@ -267,9 +267,9 @@ const SAMPLE_RESUMES = {
         endDate: '',
         current: true,
         bullets: [
-          'Created unified multi-brand design system with 240+ components, accelerating sprint delivery velocity by 35% across 6 client teams.',
-          'Directed redesign of flagship e-commerce mobile application, resulting in a 41% uplift in average basket value and 4.9 App Store rating.',
-          'Orchestrated bi-weekly design critique workshops, standardizing accessibility and ergonomic design guidelines.'
+          'Architected unified multi-brand design system with 240+ components, accelerating sprint delivery velocity by 35% across 6 client teams.',
+          'Spearheaded comprehensive redesign of flagship e-commerce mobile application, resulting in a 41% uplift in average basket value and 4.9 App Store rating.',
+          'Accelerated team alignment by orchestrating bi-weekly design critique workshops, standardizing accessibility and ergonomic design guidelines.'
         ]
       },
       {
@@ -281,8 +281,8 @@ const SAMPLE_RESUMES = {
         endDate: '2021-07',
         current: false,
         bullets: [
-          'Prototyped high-fidelity micro-interactions and vector design assets for Fortune 500 SaaS applications.',
-          'Conducted qualitative usability research with 60+ participants, identifying key friction points and trimming checkout drop-off by 26%.'
+          'Architected and prototyped high-fidelity micro-interactions and vector design assets for Fortune 500 SaaS applications.',
+          'Accelerated checkout conversion by conducting qualitative usability research with 60+ participants, identifying key friction points and trimming drop-off by 26%.'
         ]
       }
     ],
@@ -366,19 +366,19 @@ const TEMPLATES = [
 ];
 
 const ACTION_VERBS = {
-  leadership: ['Spearheaded', 'Orchestrated', 'Architected', 'Pioneered', 'Steered', 'Empowered', 'Mobilized', 'Governed', 'Directed', 'Championed'],
-  development: ['Engineered', 'Architected', 'Implemented', 'Constructed', 'Refactored', 'Deployed', 'Automated', 'Scaled', 'Synthesized', 'Programmed'],
-  optimization: ['Accelerated', 'Enhanced', 'Maximized', 'Streamlined', 'Trimmed', 'Boosted', 'Elevated', 'Restructured', 'Standardized', 'Slashed'],
-  collaboration: ['Partnered', 'Coordinated', 'Facilitated', 'Liaised', 'Fostered', 'Negotiated', 'Advocated', 'Synchronized', 'Consolidated', 'Mentored'],
-  innovation: ['Conceptualized', 'Devised', 'Discovered', 'Designed', 'Instituted', 'Pioneered', 'Formulated', 'Modernized', 'Transformed', 'Revolutionized']
+  leadership: ['Spearheaded', 'Architected', 'Accelerated', 'Orchestrated', 'Pioneered', 'Steered', 'Empowered', 'Mobilized', 'Governed', 'Directed', 'Championed'],
+  development: ['Architected', 'Engineered', 'Accelerated', 'Implemented', 'Constructed', 'Refactored', 'Deployed', 'Automated', 'Scaled', 'Synthesized', 'Programmed'],
+  optimization: ['Accelerated', 'Spearheaded', 'Architected', 'Enhanced', 'Maximized', 'Streamlined', 'Trimmed', 'Boosted', 'Elevated', 'Restructured', 'Standardized', 'Slashed'],
+  collaboration: ['Orchestrated', 'Spearheaded', 'Partnered', 'Coordinated', 'Facilitated', 'Liaised', 'Fostered', 'Negotiated', 'Advocated', 'Synchronized', 'Mentored'],
+  innovation: ['Pioneered', 'Architected', 'Spearheaded', 'Conceptualized', 'Devised', 'Discovered', 'Designed', 'Instituted', 'Formulated', 'Modernized', 'Revolutionized']
 };
 
 const BULLET_TEMPLATES = [
   "Spearheaded [initiative/feature], resulting in a [X%] improvement in [key metric] within [timeframe].",
   "Architected and deployed [system/solution] handling [volume/load] with [uptime/reliability metric].",
-  "Optimized [process/pipeline], slashing [latency/cost/time] by [X%] across [team/organization].",
-  "Led cross-functional team of [X] engineers and designers to launch [product/project] on schedule.",
-  "Reduced [operational cost/error rate] by [X%] through implementation of automated [tool/workflow]."
+  "Accelerated [process/workflow], slashing [latency/cost/time] by [X%] across [team/organization].",
+  "Spearheaded cross-functional team of [X] engineers and designers to launch [product/project] on schedule.",
+  "Architected automated [tool/workflow], cutting [operational cost/error rate] by [X%]."
 ];
 
 // Calculate ATS and Quality Score
@@ -437,8 +437,12 @@ function calculateResumeScore(resume) {
     (exp.bullets || []).forEach(bullet => {
       totalBullets++;
       if (metricRegex.test(bullet)) metricsCount++;
-      const firstWord = bullet.trim().split(/\s+/)[0]?.toLowerCase();
-      if (firstWord && allVerbs.some(v => firstWord.startsWith(v.slice(0, 5)))) {
+      const cleanBullet = bullet.trim().replace(/^["'“‘•\-\*\s]+/, '');
+      const firstWord = cleanBullet.split(/\s+/)[0]?.toLowerCase().replace(/[^\w]/g, '');
+      if (firstWord && (
+        allVerbs.some(v => firstWord === v || firstWord.startsWith(v.slice(0, 4)) || v.startsWith(firstWord.slice(0, 4))) ||
+        ['spearheaded', 'architected', 'accelerated', 'engineered', 'orchestrated', 'pioneered', 'steered', 'streamlined', 'maximized', 'automated', 'championed', 'transformed', 'modernized', 'overhauled', 'boosted', 'slashed', 'trimmed', 'elevated'].includes(firstWord)
+      )) {
         actionVerbCount++;
       }
     });
