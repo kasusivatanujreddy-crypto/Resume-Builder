@@ -38,9 +38,8 @@ window.APP_CONFIG = {
   },
 
   // 🔗 RENDER BACKEND CONNECTION:
-  // Paste your live Render Web Service URL below (e.g. 'https://craftcv-backend.onrender.com')
-  // If left empty, frontend automatically uses relative '/api' endpoints or Vercel rewrites proxy
-  renderBackendUrl: '',
+  // Live Render Web Service URL
+  renderBackendUrl: 'https://craftcv-backend-66er.onrender.com',
 
   // Backend API Base URL resolution
   apiBase: (function () {
