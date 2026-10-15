@@ -96,6 +96,21 @@
     }, 2800);
   }
 
+  // Resolve Backend API Endpoint (Supports Render Backend, Vercel Rewrites & Localhost)
+  function getApiEndpoint(path) {
+    let base = '';
+    if (window.APP_CONFIG) {
+      if (typeof window.APP_CONFIG.getApiBase === 'function') {
+        base = window.APP_CONFIG.getApiBase();
+      } else if (window.APP_CONFIG.apiBase) {
+        base = window.APP_CONFIG.apiBase;
+      }
+    }
+    base = (base || '').replace(/\/+$/, '');
+    const cleanPath = path.startsWith('/') ? path : '/' + path;
+    return base ? `${base}${cleanPath}` : cleanPath;
+  }
+
   // Populate Personal Details Form
   function populateForm() {
     const p = resumeState.personal || {};
@@ -572,8 +587,7 @@
     try {
       const prompt = `Write a punchy, ATS-optimized, high-impact 2-3 sentence executive professional resume summary for a "${title}" skilled in: ${topSkills}. Do not use bullet points, intro text, or placeholder brackets. Return only the summary text.`;
       
-      const baseUrl = (window.APP_CONFIG && window.APP_CONFIG.apiBase) || '';
-      const endpoint = baseUrl + ((window.APP_CONFIG && window.APP_CONFIG.api && window.APP_CONFIG.api.aiSummary) || '/api/ai/summary');
+      const endpoint = getApiEndpoint((window.APP_CONFIG && window.APP_CONFIG.api && window.APP_CONFIG.api.aiSummary) || '/api/ai/summary');
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1719,7 +1733,7 @@
 
     // Check through backend API or directly through Supabase client
     try {
-      const res = await fetch('/api/supabase/status');
+      const res = await fetch(getApiEndpoint('/api/supabase/status'));
       if (res.ok) {
         const data = await res.json();
         if (data.connected) {
@@ -1786,7 +1800,7 @@
 
       // Try Backend endpoint first (uses service role key if needed)
       try {
-        const res = await fetch('/api/resumes', {
+        const res = await fetch(getApiEndpoint('/api/resumes'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -1875,7 +1889,7 @@
 
       // Try Backend endpoint
       try {
-        const res = await fetch('/api/resumes');
+        const res = await fetch(getApiEndpoint('/api/resumes'));
         if (res.ok) {
           const data = await res.json();
           if (data.success) resumes = data.resumes;
@@ -1994,7 +2008,7 @@
     try {
       let r = null;
       try {
-        const res = await fetch(`/api/resumes/${id}`);
+        const res = await fetch(getApiEndpoint(`/api/resumes/${id}`));
         if (res.ok) {
           const data = await res.json();
           if (data.success) r = data.resume;
@@ -2038,7 +2052,7 @@
     try {
       let deleted = false;
       try {
-        const res = await fetch(`/api/resumes/${id}`, { method: 'DELETE' });
+        const res = await fetch(getApiEndpoint(`/api/resumes/${id}`), { method: 'DELETE' });
         if (res.ok) deleted = true;
       } catch (e) {}
 
@@ -2095,7 +2109,7 @@
       if (shareId) {
         showToast('Loading shared resume from Supabase...', 'info');
         try {
-          const res = await fetch(`/api/resumes/share/${shareId}`);
+          const res = await fetch(getApiEndpoint(`/api/resumes/share/${shareId}`));
           if (res.ok) {
             const data = await res.json();
             if (data.success && data.resume) {

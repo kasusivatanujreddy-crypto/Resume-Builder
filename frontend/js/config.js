@@ -37,10 +37,33 @@ window.APP_CONFIG = {
     }
   },
 
-  // Backend API Base URL (auto-targets localhost:3000 when opened via file:// or custom port)
-  apiBase: (typeof window !== 'undefined' && (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '3000')))
-    ? 'http://localhost:3000'
-    : '',
+  // 🔗 RENDER BACKEND CONNECTION:
+  // Paste your live Render Web Service URL below (e.g. 'https://craftcv-backend.onrender.com')
+  // If left empty, frontend automatically uses relative '/api' endpoints or Vercel rewrites proxy
+  renderBackendUrl: '',
+
+  // Backend API Base URL resolution
+  apiBase: (function () {
+    if (typeof window !== 'undefined' && window.APP_CONFIG_RENDER_URL) {
+      return window.APP_CONFIG_RENDER_URL.replace(/\/+$/, '');
+    }
+    if (typeof window !== 'undefined') {
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (isLocal && window.location.port && window.location.port !== '3000') {
+        return 'http://localhost:3000';
+      }
+    }
+    return '';
+  })(),
+
+  // Helper: Get active backend URL
+  getApiBase: function () {
+    const renderUrl = this.renderBackendUrl && this.renderBackendUrl.trim();
+    if (renderUrl && renderUrl.startsWith('https://')) {
+      return renderUrl.replace(/\/+$/, '');
+    }
+    return this.apiBase || '';
+  },
 
   // API endpoints hosted by your Node server (server.js)
   api: {

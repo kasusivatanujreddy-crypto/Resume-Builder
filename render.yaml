@@ -1,11 +1,11 @@
 services:
   - type: web
-    name: craftcv-studio
+    name: craftcv-backend
     env: node
     plan: free
     region: oregon
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: node backend/server.js
     autoDeploy: true
     envVars:
       - key: PORT
